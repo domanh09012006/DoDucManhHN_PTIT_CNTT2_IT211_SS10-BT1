@@ -65,6 +65,9 @@ public class CartService {
                     request.getUserId()
             );
 
+            // Lưu lại sau khi cộng dồn để đảm bảo dữ liệu được cập nhật
+            cartRepository.save(existingItem);
+
             return existingItem;
 
         }
@@ -85,6 +88,55 @@ public class CartService {
         );
 
         return newItem;
+
+    }
+
+    public List<CartItem> getAll() {
+
+        log.info("Lấy danh sách tất cả CartItem");
+
+        return cartRepository.findAll();
+
+    }
+
+    public CartItem getById(Long id) {
+
+        log.info("Lấy CartItem theo id={}", id);
+
+        return cartRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("CartItem không tồn tại id=" + id));
+
+    }
+
+    public CartItem updateQuantity(Long id, Integer quantity) {
+
+        log.info("Cập nhật quantity cho cartItem id={} với quantity={}", id, quantity);
+
+        if (quantity == null || quantity <= 0) {
+            log.warn("Quantity không hợp lệ khi cập nhật id={} quantity={}", id, quantity);
+            throw new RuntimeException("Quantity phải lớn hơn 0");
+        }
+
+        CartItem item = cartRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("CartItem không tồn tại id=" + id));
+
+        item.setQuantity(quantity);
+        cartRepository.save(item);
+
+        return item;
+
+    }
+
+    public void deleteById(Long id) {
+
+        log.info("Xóa CartItem id={}", id);
+
+        if (!cartRepository.existsById(id)) {
+            log.warn("Thử xóa CartItem không tồn tại id={}", id);
+            throw new RuntimeException("CartItem không tồn tại id=" + id);
+        }
+
+        cartRepository.deleteById(id);
 
     }
 
